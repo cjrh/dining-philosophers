@@ -13,12 +13,14 @@ struct Philosopher {
 
 impl Philosopher {
     fn think(&self) {
+        println!("{} is thinking...", &self.name);
         self.thoughts
             .send(format!("Eureka! {} has a new idea!", &self.name))
             .unwrap();
     }
 
     fn eat(&self) {
+        println!("{} is grabbing forks...", &self.name);
         self.left_fork.lock().unwrap();
         self.right_fork.lock().unwrap();
         println!("{} is eating...", &self.name);
@@ -56,7 +58,7 @@ fn main() {
         .collect();
 
     // Make each of them think and eat 100 times
-    for _ in 0..100 {
+    for _ in 0..10 {
         for p in philosophers.iter() {
             p.think();
             p.eat();
@@ -65,9 +67,14 @@ fn main() {
 
         // Make each philosopher eat
     }
+    tx.send("Done".to_string()).unwrap();
 
     // Output their thoughts
-    for _ in 0..PHILOSOPHERS.len() * 100 {
+    loop {
+        let thought = rx.recv().unwrap();
+        if thought == "Done" {
+            break;
+        }
         println!("{}", rx.recv().unwrap());
     }
 }
