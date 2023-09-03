@@ -21,7 +21,7 @@ impl Philosopher {
     fn think(&self) {
         // Create an empty string with `indent` spaces
         self.print("is thinking...");
-        random_sleep(1, 10);
+        random_sleep(10, 20);
         self.thoughts
             .send(format!("Eureka! {} has a new idea!", &self.name))
             .unwrap();
@@ -34,7 +34,7 @@ impl Philosopher {
             if r1.is_ok() {
                 self.print("got left fork!");
             }
-            random_sleep(1, 1000);
+            random_sleep(1, 100);
             let r2 = self.right_fork.try_lock();
             if r2.is_ok() {
                 self.print("got right fork!");
@@ -53,20 +53,24 @@ impl Philosopher {
                 drop(r1);
                 drop(r2);
             }
-            random_sleep(100, 101);
+            random_sleep(1, 1000);
         };
+
+        // Instead of the loop above, the following naive procedure blocks
+        // when all philosophers are waiting to get the right fork.
+        //
         // self.print("is waiting left fork...");
         // let _left_fork_guard = self.left_fork.lock().unwrap();
         // random_sleep(1, 1000);
         // self.print("is waiting right fork...");
         // let _right_fork_guard = self.right_fork.lock().unwrap();
         self.print("is eating...");
-        random_sleep(1, 10);
+        random_sleep(10, 20);
         self.print("is returning forks...");
     }
 }
 
-static PHILOSOPHERS: &[&str] = &["Socrates", "Plato", "Aristotle", "Thales", "Kant"];
+static PHILOSOPHERS: &[&str] = &["Socrates", "Plato", "Aristotle", "Thales", "Pythagoras"];
 
 fn main() {
     // Create forks
@@ -94,10 +98,6 @@ fn main() {
                 right_fork,
                 thoughts: tx.clone(),
             };
-            // thread::spawn(move || {
-            //     philosopher.think();
-            //     philosopher.eat();
-            // });
             philosopher
         })
         .collect();
